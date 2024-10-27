@@ -7,6 +7,7 @@ from dotenv import dotenv_values
 config = dotenv_values(".env")
 
 from database.models import ProfileUser
+import uvicorn
 
 
 
@@ -138,3 +139,7 @@ async def update_profile_language(language: str, current_user: User = Depends(au
         return {"status": "success", "message": "Language updated successfully"}
     else:
         return {"status": "error", "message": "Failed to update language"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app)
