@@ -14,13 +14,13 @@ class ProfileUser(BaseModel):
     language: dict = Field()
     
     
-    class Config:
-        allow_population_by_field = True
-        schema_extra = {
-            "_id": "",
-            "name": "Ruben Reyes",
+    # class Config:
+    #     allow_population_by_field = True
+    #     schema_extra = {
+    #         "_id": "",
+    #         "name": "Ruben Reyes",
             
-        }
+    #     }
 class UserProfile(BaseModel):
     name: str
     email: str
