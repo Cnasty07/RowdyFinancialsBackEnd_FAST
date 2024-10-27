@@ -44,14 +44,18 @@ async def root():
 
 
 @app.get("/api/v1/home", tags=["home"])
-async def home(current_user: User = Depends(auth.require_user)):
+async def home(current_user: User = Depends(auth.optional_user)):
     users_collection = app.database["users"]
-    user_profile = users_collection.find_one({"user_id": current_user.user_id}, {"_id": 0, "user_id": 1, "first_name": 1, "last_name": 1, "email": 1, "language": 1})
     
-    if user_profile:
-        return {"status": "success", "profile": user_profile}
+    if current_user:
+        user_profile = users_collection.find_one({"user_id": current_user.user_id}, {"_id": 0, "user_id": 1, "first_name": 1, "last_name": 1, "email": 1, "language": 1})
+        
+        if user_profile:
+            return {"status": "success", "profile": user_profile}
+        else:
+            return {"status": "error", "message": "User profile not found"}
     else:
-        return {"status": "error", "message": "User profile not found"}
+        return {"status": "error", "message": "User not authenticated"}
 
 @app.post("/api/v1/login")
 async def login(user: User = Depends(auth.require_user)):
