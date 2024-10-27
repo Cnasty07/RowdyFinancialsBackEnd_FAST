@@ -8,6 +8,7 @@ config = dotenv_values(".env")
 
 from database.models import ProfileUser
 import uvicorn
+from fastapi.openapi.utils import get_openapi
 
 
 
@@ -30,7 +31,20 @@ auth = init_auth(auth_url="https://0586364.propelauthtest.com",api_key= config["
 
 @app.get("/", tags=["root"])
 async def root():
-    return {"message": "Welcome to the Rowdy Financials API"}
+    def custom_openapi():
+        if app.openapi_schema:
+            return app.openapi_schema
+        openapi_schema = get_openapi(
+            title="Rowdy Financials API",
+            version="1.0.0",
+            description="API for Rowdy Financials",
+            routes=app.routes,
+        )
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+
+    app.openapi = custom_openapi
+    # return {"message": "Welcome to the Rowdy Financials API"}
 
 
 @app.post("/api/v1/login")
