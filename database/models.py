@@ -1,7 +1,8 @@
 import os
 import uuid
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
+from pymongo import MongoClient
 
 #main code 
 class ProfileUser(BaseModel):
@@ -20,13 +21,32 @@ class ProfileUser(BaseModel):
             "name": "Ruben Reyes",
             
         }
-        
-class AccountsUser(BaseModel):
-    id: str = Field()
+class UserProfile(BaseModel):
+    name: str
+    email: str
+    language: str = Field(default='en', regex='^(en|es)$')  # Only allow 'en' or 'es'
+
+# Example usage
+user_profile = UserProfile(name="Mock User", email="mockuser@example.com")
+print(user_profile)
+
+
+class Account(BaseModel):
+    id: int
+    name: str
+    balance: float
+
+class AccountsScreenModel(BaseModel):
+    accounts: List[Account]
+    deposit_percentage: Optional[float] = 0
+    transfer_amount: Optional[float] = None
+
+# class AccountsUser(BaseModel):
+#     id: str = Field()
     
     
-class AccountTransfer(BaseModel):
-    id: str = Field()
+# class AccountTransfer(BaseModel):
+#     id: str = Field()
 
 def main():
     pass
