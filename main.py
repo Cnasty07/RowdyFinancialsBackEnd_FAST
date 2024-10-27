@@ -1,10 +1,31 @@
 from fastapi import FastAPI, Depends
+"""
+Connects to the MongoDB database and initializes the FastAPI application with a lifespan context manager.
+Functions:
+    root(): Returns a welcome message for the Rowdy Financials API.
+    login(user: User): Generates a new access token for the user.
+    add_user(new_user: ProfileUser, current_user: User): Adds a new user to the database.
+    add_user(new_user: User): Adds a new user to the database after sign-up.
+    read_root(current_user: User): Returns the user ID of the current user.
+    refresh_token(current_user: User): Generates a new access token for the current user.
+    transfer_accounts(from_account_id: str, to_account_id: str, amount: float, current_user: User): Transfers funds between accounts.
+    update_profile_language(language: str, current_user: User): Updates the user's preferred language.
+Dependencies:
+    FastAPI: Web framework for building APIs.
+    propelauth_fastapi: Authentication library for FastAPI.
+    pymongo: MongoDB driver for Python.
+    contextlib: Utilities for working with context managers.
+    dotenv: Library for loading environment variables from a .env file.
+    database.models: Module containing the ProfileUser model.
+"""
 from propelauth_fastapi import init_auth, init_base_auth, User , TokenVerificationMetadata
 from pymongo import MongoClient
 from contextlib import asynccontextmanager
 from dotenv import dotenv_values
 
 config = dotenv_values(".env")
+
+from database.models import ProfileUser
 
 
 
@@ -28,6 +49,31 @@ auth = init_auth(auth_url="https://0586364.propelauthtest.com",api_key= config["
 @app.get("/", tags=["root"])
 async def root():
     return {"message": "Welcome to the Rowdy Financials API"}
+
+
+@app.post("/api/v1/login")
+async def login(user: User = Depends(auth.require_user)):
+    # Generate a new access token for the user
+    access_token = auth.generate_access_token(user_id=user.user_id)
+    return {"access_token": access_token}
+
+
+@app.post("/api/v1/add_user", response_model=ProfileUser)
+async def add_user(new_user: ProfileUser, current_user: User = Depends(auth.require_user)):
+    users_collection = app.database["users"]
+    
+    # Check if the user already exists
+    existing_user = users_collection.find_one({"user_id": new_user.user_id})
+    if existing_user:
+        return {"status": "error", "message": "User already exists"}
+    
+    # Add the new user to the database
+    user_data = new_user.dict()
+    user_data["language"] = "en"  # Default language
+    users_collection.insert_one(user_data)
+    
+    return {"status": "success", "message": "User added successfully"}
+
 
 # add new user to db after sign up
 @app.post("/api/v1/add_user")
@@ -66,6 +112,8 @@ async def refresh_token(current_user: User = Depends(auth.require_user)):
 
 
 # -- Accounts Endpoints -- 
+
+
 @app.post("/api/v1/update/accounts/transfer")
 async def transfer_accounts(from_account_id: str, to_account_id: str, amount: float, current_user: User = Depends(auth.require_user)):
     accounts_collection = app.database["accounts"]
@@ -109,14 +157,3 @@ async def update_profile_language(language: str, current_user: User = Depends(au
         return {"status": "success", "message": "Language updated successfully"}
     else:
         return {"status": "error", "message": "Failed to update language"}
-
-# @app.get("/api/v1/get/profile")
-# async def get_profile(current_user: User = Depends(auth.require_user)):
-#     #
-#     return {current_user.user_id: {"name": current_user.first_name + current_user.last_name , "email": current_user.email, "language": str}}
-
-# # updates profile POST (sends to db to update)
-# @app.post("/api/v1/update/profile")
-# async def get_profile(updates: object, current_user: User = Depends(auth.require_user)):
-    
-#     return {current_user: {"name": current_user.first_name + current_user.last_name , "email": current_user.email, "language": str}}
