@@ -1,23 +1,4 @@
 from fastapi import FastAPI, Depends
-"""
-Connects to the MongoDB database and initializes the FastAPI application with a lifespan context manager.
-Functions:
-    root(): Returns a welcome message for the Rowdy Financials API.
-    login(user: User): Generates a new access token for the user.
-    add_user(new_user: ProfileUser, current_user: User): Adds a new user to the database.
-    add_user(new_user: User): Adds a new user to the database after sign-up.
-    read_root(current_user: User): Returns the user ID of the current user.
-    refresh_token(current_user: User): Generates a new access token for the current user.
-    transfer_accounts(from_account_id: str, to_account_id: str, amount: float, current_user: User): Transfers funds between accounts.
-    update_profile_language(language: str, current_user: User): Updates the user's preferred language.
-Dependencies:
-    FastAPI: Web framework for building APIs.
-    propelauth_fastapi: Authentication library for FastAPI.
-    pymongo: MongoDB driver for Python.
-    contextlib: Utilities for working with context managers.
-    dotenv: Library for loading environment variables from a .env file.
-    database.models: Module containing the ProfileUser model.
-"""
 from propelauth_fastapi import init_auth, init_base_auth, User , TokenVerificationMetadata
 from pymongo import MongoClient
 from contextlib import asynccontextmanager
